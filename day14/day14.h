@@ -1,6 +1,7 @@
 #ifndef STARTER_DAY14_H
 #define STARTER_DAY14_H
 
+#include <optional>
 #include <set>
 #include <string>
 #include <utility>
@@ -34,9 +35,21 @@ private:
 };
 
 std::set<Point> createRocks(const std::vector<std::string>& input);
+void addFloor(std::set<Point>& rocks);
+
+std::optional<unsigned> findBottomPoint(const Point& newPoint,
+                                        const std::set<Point>& currentPoints);
+
+Point createStartPoint();
+bool canGoLeft(const Point& newPoint, const std::set<Point>& currentPoints);
+bool canGoRight(const Point& newPoint, const std::set<Point>& currentPoints);
+bool canMoveDown(const Point& newPoint, const std::set<Point>& currentPoints);
+bool isMoveable(const Point& newPoint, const std::set<Point>& currentPoints);
+void goLeft(Point& p);
+void goRight(Point& p);
 
 unsigned countSandBeforeFalling(const std::vector<std::string>& input);
-
+unsigned countSandBeforeStoppingOnFloor(const std::vector<std::string>& input);
 }  // namespace day14
 
 #endif  // STARTER_DAY14_H

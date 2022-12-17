@@ -42,53 +42,26 @@ std::set<Point> createRocks(const std::vector<std::string>& input) {
     return rocks;
 }
 
-namespace {
-void display(const std::set<Point>& rocks, const Point& current, bool displayPoint = false) {
-    return;
-
-    static unsigned counter{0};
-    system("clear");
-
-    if (!displayPoint) counter++;
-    std::cout << counter << std::endl;
-
+void addFloor(std::set<Point>& rocks) {
     auto xMin = rocks.begin()->first;
     auto xMax = rocks.begin()->first;
-    auto yMin = 0u;
     auto yMax = rocks.begin()->second;
 
     for (const auto& p : rocks) {
         xMin = std::min(p.first, xMin);
         xMax = std::max(p.first, xMax);
-        yMin = std::min(p.second, yMin);
         yMax = std::max(p.second, yMax);
     }
 
-    if (xMin != 0) xMin -= 1;
+    xMax += 500;
+    xMin = 0;
+    yMax += 2;
 
-    if (yMin != 0) yMin -= 1;
-
-    xMax += 1;
-    yMax += 1;
-
-    for (auto y = yMin; y <= yMax; y++) {
-        for (auto x = xMin; x <= xMax; x++) {
-            if (rocks.contains(Point{x, y})) {
-                const auto p = rocks.find(Point{x, y});
-                std::cout << p->draw();
-            } else if (displayPoint && x == current.first && y == current.second)
-                std::cout << "$";
-            else {
-                if (x == 500 && y == 0)
-                    std::cout << "+";
-                else
-                    std::cout << " ";
-            }
-        }
-        std::cout << std::endl;
+    for (auto x = xMin; x <= xMax; x++) {
+        Point p{x, yMax};
+        p.setType(Point::Type::ROCK);
+        rocks.insert(p);
     }
-
-    std::this_thread::sleep_for(std::chrono::milliseconds{200});
 }
 
 std::optional<unsigned> findBottomPoint(const Point& newPoint,
@@ -114,6 +87,12 @@ std::optional<unsigned> findBottomPoint(const Point& newPoint,
     return result;
 }
 
+Point createStartPoint() {
+    Point p{500, 0};
+    p.setType(Point::Type::SAND);
+    return p;
+}
+
 bool canGoLeft(const Point& newPoint, const std::set<Point>& currentPoints) {
     return !currentPoints.contains(Point{newPoint.first - 1, newPoint.second + 1});
 }
@@ -121,21 +100,71 @@ bool canGoLeft(const Point& newPoint, const std::set<Point>& currentPoints) {
 bool canGoRight(const Point& newPoint, const std::set<Point>& currentPoints) {
     return !currentPoints.contains(Point{newPoint.first + 1, newPoint.second + 1});
 }
-}  // namespace
+
+bool canMoveDown(const Point& newPoint, const std::set<Point>& currentPoints) {
+    return !currentPoints.contains(Point{newPoint.first, newPoint.second + 1});
+}
+
+bool isMoveable(const Point& newPoint, const std::set<Point>& currentPoints) {
+    return canMoveDown(newPoint, currentPoints) || canGoLeft(newPoint, currentPoints) ||
+           canGoRight(newPoint, currentPoints);
+}
+
+void goLeft(Point& p) {
+    p.first -= 1;
+    p.second += 1;
+}
+
+void goRight(Point& p) {
+    p.first += 1;
+    p.second += 1;
+}
 
 unsigned countSandBeforeFalling(const std::vector<std::string>& input) {
     auto points = createRocks(input);
 
-    Point p{500, 0};
-    p.setType(Point::Type::SAND);
+    Point p = createStartPoint();
     unsigned counter{0};
 
     while (true) {
-        if (!points.contains(Point{p.first, p.second + 1})) {
+        if (canMoveDown(p, points)) {
+            auto val = findBottomPoint(p, points);
+            if (!val) break;
+
+            p.second = val.value() - 1;
+        }
+
+        if (canGoLeft(p, points)) {
+            goLeft(p);
+            continue;
+        }
+
+        if (canGoRight(p, points)) {
+            goRight(p);
+            continue;
+        }
+
+        points.insert(p);
+
+        p = createStartPoint();
+        counter++;
+    }
+
+    return counter;
+}
+
+unsigned countSandBeforeStoppingOnFloor(const std::vector<std::string>& input) {
+    auto points = createRocks(input);
+    addFloor(points);
+
+    Point p = createStartPoint();
+    unsigned counter{0};
+
+    while (true) {
+        if (canMoveDown(p, points)) {
             auto val = findBottomPoint(p, points);
             if (!val) {
                 points.insert(p);
-                display(points, {});
                 break;
             }
 
@@ -143,28 +172,23 @@ unsigned countSandBeforeFalling(const std::vector<std::string>& input) {
         }
 
         if (canGoLeft(p, points)) {
-            p.first -= 1;
-            p.second += 1;
-            display(points, p, true);
+            goLeft(p);
             continue;
         }
 
         if (canGoRight(p, points)) {
-            p.first += 1;
-            p.second += 1;
-            display(points, p, true);
+            goRight(p);
             continue;
         }
 
         points.insert(p);
 
-        display(points, {});
-
-        p = Point{500, 0};
-        p.setType(Point::Type::SAND);
+        p = createStartPoint();
         counter++;
+
+        if (!isMoveable(p, points)) break;
     }
 
-    return counter;
+    return counter + 1;
 }
 }  // namespace day14

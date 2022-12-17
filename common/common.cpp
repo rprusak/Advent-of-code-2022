@@ -30,7 +30,7 @@ std::vector<std::string> split(const std::string &str, const std::string &delim)
     return tokens;
 }
 
-inline std::string trim(const std::string &s) {
+std::string trim(const std::string &s) {
     auto wsfront = std::find_if_not(s.begin(), s.end(), [](int c) { return std::isspace(c); });
     auto wsback =
         std::find_if_not(s.rbegin(), s.rend(), [](int c) { return std::isspace(c); }).base();

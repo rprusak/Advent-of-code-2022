@@ -8,7 +8,9 @@ unsigned part1(const std::vector<std::string> &input) {
     return day14::countSandBeforeFalling(input);
 }
 
-unsigned part2(const std::vector<std::string> &) { return 0; }
+unsigned part2(const std::vector<std::string> &input) {
+    return day14::countSandBeforeStoppingOnFloor(input);
+}
 
 int main(int argc, char **argv) {
     try {
