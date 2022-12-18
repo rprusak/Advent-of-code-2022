@@ -37,12 +37,20 @@ std::string trim(const std::string &s) {
     return (wsback <= wsfront ? std::string() : std::string(wsfront, wsback));
 }
 
-std::string getFilename(int argc, char *argv[]) {
-    if (argc != 2) {
+std::string getFilename(int argc, char *argv[], int pos) {
+    if (pos > argc - 1) {
         throw std::runtime_error{"Argument required!"};
     }
 
     return argv[1];
+}
+
+int getNumber(int argc, char *argv[], int pos) {
+    if (pos > argc - 1) {
+        throw std::runtime_error{"Argument required!"};
+    }
+
+    return std::stoi(argv[pos]);
 }
 
 std::vector<int> convertToNumbers(const std::vector<std::string> &input) {
